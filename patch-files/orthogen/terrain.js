@@ -1,0 +1,1040 @@
+'use strict';
+
+const Vec3 = require('vec3').Vec3;
+const mcData = require('minecraft-data')('1.15.2')
+const rand = require('random-seed')
+
+const bh = 76 -32 - 30 + 8 // + 15;
+
+function wall(chunk, seedRand) {
+  for (let h = 0; h < 128; h++) {
+    for (let x = 0; x < 16; x++) {
+      for (let y = 0; y < 16; y++) {
+        const pos = new Vec3(x, h, y)
+        chunk.setBlockType(pos, mcData.blocksByName.bedrock.id)
+      }
+    }
+  }
+}
+
+function mountain(chunk, level, seedRand, lush) {
+  let block;
+  let plant;
+  if (lush) { 
+    block = mcData.blocksByName.grass_block.id 
+    plant = mcData.blocksByName.grass.id 
+  } else { 
+    block = mcData.blocksByName.stone.id 
+    plant = mcData.blocksByName.cactus.id 
+  }
+  for (let h = 0; h < 8; h++) {
+    for (let x = 0 + h; x < 16 - h; x++) {
+      for (let y = 0 + h; y < 16 - h; y++) {
+        if (seedRand(20) < 18) {
+          if (h > 4 + seedRand(3)) {
+            const pos = new Vec3(x, h + level + 2, y)
+            chunk.setBlockType(pos, block)
+            chunk.setBlockData(pos, 0)
+            chunk.setSkyLight(pos, 15)
+            const posUnder = new Vec3(x, h + level + 1, y)
+            chunk.setBlockType(posUnder, mcData.blocksByName.dirt.id)
+            chunk.setBlockData(posUnder, 0)
+            chunk.setSkyLight(posUnder, 15)
+            const posUnder2 = new Vec3(x, h + level, y)
+            chunk.setBlockType(posUnder2, mcData.blocksByName.dirt.id)
+            chunk.setBlockData(posUnder2, 0)
+            chunk.setSkyLight(posUnder2, 15)
+          } else {
+            const pos = new Vec3(x, h + level + 1, y)
+            chunk.setBlockType(pos, block)
+            chunk.setBlockData(pos, 1)
+            chunk.setSkyLight(pos, 15)
+            const posUnder = new Vec3(x, h + level, y)
+            chunk.setBlockType(posUnder, mcData.blocksByName.dirt.id)
+            chunk.setBlockData(posUnder, 0)
+            chunk.setSkyLight(posUnder, 15)
+          }
+          if ((h === 7) && (seedRand(4) < 3)) {
+            const pos = new Vec3(x, h + level + 3, y)
+            chunk.setBlockType(pos, mcData.blocksByName.snow.id)
+            chunk.setBlockData(pos, 0)
+            chunk.setSkyLight(pos, 15)
+            const posUnder = new Vec3(x, h + level + 2, y)
+            chunk.setBlockType(posUnder, block)
+            chunk.setBlockData(posUnder, 0)
+            chunk.setSkyLight(posUnder, 15)
+            const posUnder2 = new Vec3(x, h + level + 1, y)
+            chunk.setBlockType(posUnder2, block)
+            chunk.setBlockData(posUnder2, 0)
+            chunk.setSkyLight(posUnder2, 15)
+          }
+        } else {
+          const pos = new Vec3(x, h + level, y)
+          chunk.setBlockType(pos, block)
+          chunk.setBlockData(pos, 1)
+          chunk.setSkyLight(pos, 15)
+          if (seedRand(10) < 3) {
+            const pos = new Vec3(x, h + level + 1, y)  
+            chunk.setBlockType(pos, plant)
+            chunk.setSkyLight(pos, 15)
+          }   
+        }
+      }
+    }
+  }
+}
+
+function hill(chunk, level, seedRand, lush) {
+  let block;
+  let plant;
+  let data = 1;
+  if (lush) { 
+    block = mcData.blocksByName.grass_block.id 
+    plant = mcData.blocksByName.grass.id 
+  } else { 
+    block = mcData.blocksByName.sand.id 
+    plant = mcData.blocksByName.cactus.id 
+    data = 0;
+  }
+  for (let h = 0; h < 3; h++) {
+    for (let x = 0 + h; x < 16 - h; x++) {
+      for (let y = 0 + h; y < 16 - h; y++) {
+        if ((((x === 0 + h) && (y === 0 + h)) || 
+             ((x === 0 + h) && (y === 15 - h))) ||
+            (((x === 15 - h) && (y === 0 + h)) ||
+             ((x === 15 - h) && (y === 15 - h)))
+        ) {
+          // might want to do something in the corner with this
+        } else {
+          const pos = new Vec3(x, h + level + 1, y)
+          chunk.setBlockType(pos, block)
+          chunk.setBlockData(pos, data)
+          chunk.setSkyLight(pos, 15)
+          const posUnder = new Vec3(x, h + level, y)
+          chunk.setBlockType(posUnder, mcData.blocksByName.dirt.id)
+          chunk.setBlockData(posUnder, 0)
+          chunk.setSkyLight(posUnder, 15)
+        }
+      }
+    }
+  }
+  for (let x = 3; x < 16 - 3; x++) {
+    for (let y = 3; y < 16 - 3; y++) {
+      if (seedRand(10) === 0) {
+        const pos = new Vec3(x, level + 4, y)
+        chunk.setBlockType(pos, plant)
+        chunk.setSkyLight(pos, 15)
+      }
+    }
+  }
+}
+
+function lake(chunk, seedRand) {
+  for (let h = 13; h < 23; h++) {
+    for (let x = 0; x < 16; x++) {
+      for (let y = 0; y < 16; y++) {
+        let data = 1;
+        const pos = new Vec3(x, h+bh, y)
+        if (h < 22) {
+          chunk.setBlockType(pos, mcData.blocksByName.sand.id)
+        } else {
+          chunk.setBlockType(pos, mcData.blocksByName.air.id)
+        }
+        chunk.setBlockData(pos, 0)
+        chunk.setSkyLight(pos, h - 8)
+      }
+    }
+  }
+  for (let h = 0; h < 7; h++) {
+    for (let x = 0 + h; x < 16 - h; x++) {
+      for (let y = 0 + h; y < 16 - h; y++) {
+        const pos = new Vec3(x, 21 - h+bh, y)
+        const grassRand = seedRand(20)
+        if ((grassRand < 18) || ( h === 0)) {
+         chunk.setBlockType(pos, mcData.blocksByName.water.id)
+         chunk.setBlockData(pos, 0)
+         chunk.setSkyLight(pos, h - 8)
+        } else {
+          if (h === 6+bh) {
+            chunk.setBlockType(pos, mcData.blocksByName.tall_seagrass.id)
+            chunk.setBlockData(pos, 0)
+            chunk.setSkyLight(pos, h - 8)
+          } else {
+            chunk.setBlockType(pos, mcData.blocksByName.seagrass.id)
+            chunk.setBlockData(pos, 0)
+            chunk.setSkyLight(pos, h - 8)
+          }
+        }
+      }
+    }
+  }
+}
+
+function deciduous(chunk, level, seedRand) {
+  const coordArray = [
+    [1,1], [6,1], [12,1], 
+    [1,6], [6,6], [12,6],
+    [1,12], [6,12], [12,12]
+  ]
+  coordArray.forEach((coord) => {
+    const x = coord[0] + seedRand(3)
+    const y = coord[1] + seedRand(3)
+    const treeRand = seedRand(3)
+    let height = 1
+    if (seedRand(5) < 3) {height = 0}
+    for (let z = level + 1; z < level + 7 + height; z++) {
+      if (z > level + 2) {
+        for (let ax = -1; ax < 2; ax++) {
+          for (let ay = -1; ay < 2; ay++) {
+            const pos = new Vec3(x + ax, z, y + ay)
+            if (treeRand === 0) {
+              if (seedRand(10) < 7) { chunk.setBlockType(pos, mcData.blocksByName.birch_leaves.id) }
+            } else {
+              if (seedRand(10) < 8) { chunk.setBlockType(pos, mcData.blocksByName.oak_leaves.id) }
+            }
+            chunk.setSkyLight(pos, 15)
+          }
+        }
+      }
+      if (z < level + 6 + height) {
+        const pos2 = new Vec3(x, z, y)
+        if (treeRand === 0) {
+          chunk.setBlockType(pos2, mcData.blocksByName.birch_wood.id)
+        } else {
+          chunk.setBlockType(pos2, mcData.blocksByName.oak_wood.id)
+        }
+        chunk.setSkyLight(pos2, 15)
+      }
+    }
+  })
+}
+
+function evergreen(chunk, level, seedRand) {
+  const coordArray = [
+    [1,1], [6,1], [12,1], 
+    [1,6], [6,6], [12,6],
+    [1,12], [6,12], [12,12]
+  ]
+  coordArray.forEach((coord) => {
+    const x = coord[0] + seedRand(3)
+    const y = coord[1] + seedRand(3)
+    let height = 1
+    if (seedRand(5) < 3) {height = 0}
+    for (let z = level + 1; z < level + 7 + height; z++) {
+      if (z > level + 2) {
+        let adj = 0
+        if (z > level + 3 + height) { adj = 1}
+        if (z > level + 5 + height) { adj = 2}
+        for (let ax = -2 + adj; ax < 3 - adj; ax++) {
+          for (let ay = -2 +  adj; ay < 3 - adj; ay++) {
+            const pos = new Vec3(x + ax, z, y + ay)
+            chunk.setBlockType(pos, mcData.blocksByName.spruce_leaves.id) 
+            chunk.setSkyLight(pos, 15)
+          }
+        }
+      }
+      if (z < level + 6 + height) {
+        const pos2 = new Vec3(x, z, y)
+        chunk.setBlockType(pos2, mcData.blocksByName.spruce_wood.id)
+        chunk.setSkyLight(pos2, 15)
+      }
+    }
+  })
+}
+
+function quarry(chunk, seedRand, lush) {
+  let block;
+  if (lush) { block = mcData.blocksByName.grass_block.id } else { block = mcData.blocksByName.dirt.id }
+  for (let h = 12; h < 22; h++) {
+    for (let x = 0; x < 16; x++) {
+      for (let y = 0; y < 16; y++) {
+        let data = 1;
+        const pos = new Vec3(x, h+bh, y)
+        if (h < 22+bh) {
+          chunk.setBlockType(pos, block)
+          chunk.setBlockData(pos, 1)
+        } else {
+          chunk.setBlockType(pos, mcData.blocksByName.air.id)
+        }
+        chunk.setSkyLight(pos, h - 8)
+      }
+    }
+  }
+  for (let h = 0; h < 7; h++) {
+    for (let x = 0 + h; x < 16 - h; x++) {
+      for (let y = 0 + h; y < 16 - h; y++) {
+        const pos = new Vec3(x, 22 + bh - h, y)
+        chunk.setBlockType(pos, mcData.blocksByName.air.id)
+        chunk.setBlockData(pos, 0)
+        chunk.setSkyLight(pos, h - 8)
+      }
+    }
+  }
+}
+
+function desert(chunk, seedRand, height, lush) {
+  let block = mcData.blocksByName.sand.id;
+  let data = 0;
+  if (!lush) { data = 1 }
+  for (let x = 0; x < 16; x++) {
+    for (let y = 0; y < 16; y++) {
+      const pos = new Vec3(x, height, y)
+      chunk.setBlockType(pos, block)
+      chunk.setBlockData(pos, data)
+      chunk.setSkyLight(pos, 15)
+      const pos2 = new Vec3(x, height + 1, y)
+      if (seedRand(25) === 0) {
+        chunk.setBlockType(pos2, mcData.blocksByName.cactus.id)
+        chunk.setSkyLight(pos2, 15)
+      }
+    }
+  }
+}
+
+function lush(chunk, height, seedRand) {
+  for (let x = 0; x < 16; x++) {
+    for (let y = 0; y < 16; y++) {
+      const pos2 = new Vec3(x, height + 1, y)
+      if (seedRand(18) === 0) {
+        chunk.setBlockType(pos2, mcData.blocksByName.dark_oak_sapling.id)
+        chunk.setSkyLight(pos2, 15)
+      }
+    }
+  }
+}
+
+function sea(chunk, seedRand) {
+  for (let h = 5+5; h < 23; h++) {
+    for (let x = 0; x < 16; x++) {
+      for (let y = 0; y < 16; y++) {
+        let data = 1;
+        const pos = new Vec3(x, h+bh , y)
+        if ( h === 5+5) {
+          chunk.setBlockType(pos, mcData.blocksByName.sand.id)  
+        } else if (h < 22) {
+          chunk.setBlockType(pos, mcData.blocksByName.water.id)
+          if ((h == 8+5 + seedRand(6)) && (seedRand(2) == 1)) {
+            chunk.setBlockType(pos, mcData.blocksByName.seagrass.id)
+          }
+        } else { 
+          chunk.setBlockType(pos, mcData.blocksByName.air.id)
+        }
+        chunk.setBlockData(pos, 0)
+        chunk.setSkyLight(pos, 15)
+      }
+    }
+  }
+}
+
+const fantasyBlocks = [
+  'granite_slab',
+  'granite',
+  'granite_stairs',
+  'granite_wall',
+  'diorite_slab',
+  'diorite',
+  'diorite_stairs',
+  'diorite_wall',
+  'polished_diorite_slab',
+  'polished_diorite',
+  'polished_diorite_stairs',
+  'stone_bricks',
+  'stone',
+  'stone_slab',
+  'stone_stairs',
+  'stone_brick_wall',
+  'birch_slab',
+  'birch_wood',
+  'oak_slab',
+  'oak_wood',
+  'birch_leaves',
+  'oak_leaves',
+  'spruce_slab',
+  'spruce_wood',
+  'spruce_leaves',
+  'cobblestone',
+  'cobblestone_stairs',
+  'cobblestone_wall',
+  'cobblestone_slab',
+  'smooth_red_sandstone_slab',
+  'smooth_red_sandstone',
+  'smooth_red_sandstone_stairs'
+]
+
+function plain(chunk, level, seedRand) {
+  for (let x = 0; x < 16; x++) {
+    for (let y = 0; y < 16; y++) {
+      const bedrockheight = 1 // + seedRand(4)
+      for (let z = 0; z < level + 2; z++) {
+        let block
+        let data
+        // set a bedrock bottom at first layer and at 16
+        // if ((z < bedrockheight) || (z === 16)) { 
+        if (z < bedrockheight) { 
+          block = mcData.blocksByName.bedrock.id
+          // block = mcData.blocksByName.spruce_leaves.id
+        // underground layers of dirt and rock
+        //} else if (z < 16) {
+        //  block = (seedRand(10) < 9) ? mcData.blocksByName.dirt.id : mcData.blocksByName.granite.id
+        // } else if (z < 16 + (2 * fantasyBlocks.length)) {
+        } else if (z <= (fantasyBlocks.length)) {
+          block = mcData.blocksByName[fantasyBlocks[z - 1]].id
+        // make sure one block down is dirt
+        } else if (z === level - 1) {
+          block = mcData.blocksByName.dirt.id
+        // this is where we fill the space with random dirt and granite
+        } else if (z < level - 1) {
+          block = (seedRand(10) < 5) ? mcData.blocksByName.dirt.id : mcData.blocksByName.granite.id
+          //block = mcData.blocksByName.dirt.id
+        // surface is sand or grass
+        } else if (z === level) {
+          block = mcData.blocksByName.grass_block.id
+          data = 1
+        // sprinkle grass over the surface
+        } else if (z === level + 1 && seedRand(16) === 0) {
+          block = mcData.blocksByName.grass.id
+        }
+        const pos = new Vec3(x, z, y)
+        if (block) { 
+          chunk.setBlockType(pos, block)
+        }
+        if (data) {
+          chunk.setBlockData(pos, data)
+        }
+        chunk.setSkyLight(pos, 15)
+      }
+    }
+  }
+}
+
+//////////////////////
+//
+// Futuristic terrains
+//
+/////////////////////
+
+const concrete = mcData.blocksByName.gray_concrete.id
+const air = mcData.blocksByName.air.id
+const dirt = mcData.blocksByName.dirt.id
+const granite = mcData.blocksByName.granite.id
+
+const gray = 0
+const lightgray = 1
+const cyan = 2
+const purple = 3
+const blue = 4
+const brown =5
+const green = 6
+const red = 7
+const black = 8
+const white = 9
+const orange = 10
+const magenta = 11
+const lightblue = 12
+const yellow = 13
+const lime = 14
+const pink = 15
+
+function tarmac(chunk, level, seedRand) {
+  for (let x = 0; x < 16; x++) {
+    for (let y = 0; y < 16; y++) {
+      for (let z = 0; z < level + 1; z++) {
+        let block
+        let data
+        // set a bedrock bottom at first layer and at 16
+        // if ((z < bedrockheight) || (z === 16)) { 
+        if (z === 0) { 
+          block = mcData.blocksByName.bedrock.id 
+        //} else if (z < 16) {
+        //  block = (seedRand(10) < 5) ? mcData.blocksByName.dirt.id : mcData.blocksByName.granite.id
+        } else if (z <= 32 ) {
+          block = concrete
+          data =  z % 16 // Math.floor(Math.random() * 16) + 1
+        } else if (z === level - 1) {
+          block = mcData.blocksByName.dirt.id
+        // this is where we fill the space with random dirt and granite
+        } else if (z < level - 1) {
+          block = (seedRand(10) < 5) ? mcData.blocksByName.dirt.id : mcData.blocksByName.granite.id
+          //block = mcData.blocksByName.dirt.id
+        } else if (z === level) {
+          block = concrete  // Set surface
+          data = gray
+        }
+        const pos = new Vec3(x, z, y)
+        if (block) { 
+          chunk.setBlockType(pos, block)
+          if (data) {
+            chunk.setBlockData(pos, data)  
+          }       
+        }
+        chunk.setSkyLight(pos, 0)
+      }
+    }
+  }
+}
+
+function square(chunk, level, lush) {
+  for (let x = 1; x < 15; x++) {
+    const pos = new Vec3(x, level, 1)
+    chunk.setBlockType(pos, concrete)
+    chunk.setBlockData(pos, black)
+    chunk.setBlockType(pos.offset(0,0,13), concrete)
+    chunk.setBlockData(pos.offset(0,0,13), black)
+    const posB = new Vec3(1, level, x)
+    chunk.setBlockType(posB, concrete)
+    chunk.setBlockData(posB, black)
+    chunk.setBlockType(posB.offset(13,0,0), concrete)
+    chunk.setBlockData(posB.offset(13,0,0), black)
+  }
+  let data
+  if (lush === true) {
+    data = yellow
+  } else {
+    data = red 
+  }
+  const pos2 = new Vec3(7, level, 7)
+  chunk.setBlockType(pos2, concrete)
+  chunk.setSkyLight(pos2, 15)
+  chunk.setBlockData(pos2, data)
+  chunk.setBlockType(pos2.offset(0,0,1), concrete)
+  chunk.setBlockData(pos2.offset(0,0,1), data)
+  chunk.setBlockType(pos2.offset(1,0,1), concrete)
+  chunk.setBlockData(pos2.offset(1,0,1), data)
+  chunk.setBlockType(pos2.offset(1,0,0), concrete)
+  chunk.setBlockData(pos2.offset(1,0,0), data)
+}
+
+function cube(chunk, level, lush) {
+  const block = concrete;
+  let data = gray;
+  const air = mcData.blocksByName.air.id 
+  for (let x = 2; x < 14; x++) {
+    for (let z = 2; z < 14; z++) {
+      for (let h = level + 1; h < level + 6; h++) {
+        const pos = new Vec3(x, h, z)
+        chunk.setBlockType(pos, block)
+        chunk.setBlockData(pos, data)
+        chunk.setSkyLight(pos, 0)
+      }
+    }
+  }
+  for (let x = 3; x < 13; x++) {
+    for (let z = 3; z < 13; z++) {
+      for (let h = level + 1; h < level + 5; h++) {
+        const pos = new Vec3(x, h, z)
+        chunk.setBlockType(pos, air)
+        chunk.setSkyLight(pos, 15)
+      }
+    }
+  }
+
+  if (lush === true) {
+    data = yellow
+  } else {
+    data = red 
+  }
+
+  let pos = new Vec3(13,level + 1,7)
+  chunk.setBlockType(pos, air)
+  chunk.setSkyLight(pos, 15)
+  chunk.setBlockType(pos.offset(0,0,1), air)
+  chunk.setSkyLight(pos.offset(0,0,1), 15)
+  chunk.setBlockType(pos.offset(0,1,1), air)
+  chunk.setSkyLight(pos.offset(0,1,1), 15)
+  chunk.setBlockType(pos.offset(0,1,0), air)
+  chunk.setSkyLight(pos.offset(0,1,0), 15)
+
+  pos = new Vec3(4, level + 2, 13)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(2,0,0), concrete)
+  chunk.setBlockData(pos.offset(2,0,0), data)
+  chunk.setBlockType(pos.offset(3,0,0), concrete)
+  chunk.setBlockData(pos.offset(3,0,0), data)
+  chunk.setBlockType(pos.offset(5,0,0), concrete)
+  chunk.setBlockData(pos.offset(5,0,0), data)
+  chunk.setBlockType(pos.offset(7,0,0), concrete)
+  chunk.setBlockData(pos.offset(7,0,0), black)
+
+  pos = new Vec3(4, level + 4, 13)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(1,0,0), concrete)
+  chunk.setBlockData(pos.offset(1,0,0), data)
+  chunk.setBlockType(pos.offset(3,0,0), concrete)
+  chunk.setBlockData(pos.offset(3,0,0), black)
+  chunk.setBlockType(pos.offset(5,0,0), concrete)
+  chunk.setBlockData(pos.offset(5,0,0), data)
+  chunk.setBlockType(pos.offset(6,0,0), concrete)
+  chunk.setBlockData(pos.offset(6,0,0), data)
+  chunk.setBlockType(pos.offset(7,0,0), concrete)
+  chunk.setBlockData(pos.offset(7,0,0), data)
+
+  pos = new Vec3(4, level + 2, 2)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(2,0,0), concrete)
+  chunk.setBlockData(pos.offset(2,0,0), data)
+  chunk.setBlockType(pos.offset(3,0,0), concrete)
+  chunk.setBlockData(pos.offset(3,0,0), data)
+  chunk.setBlockType(pos.offset(5,0,0), concrete)
+  chunk.setBlockData(pos.offset(5,0,0), data)
+  chunk.setBlockType(pos.offset(7,0,0), concrete)
+  chunk.setBlockData(pos.offset(7,0,0), black)
+
+  pos = new Vec3(4, level + 4, 2)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(1,0,0), concrete)
+  chunk.setBlockData(pos.offset(1,0,0), data)
+  chunk.setBlockType(pos.offset(3,0,0), concrete)
+  chunk.setBlockData(pos.offset(3,0,0), black)
+  chunk.setBlockType(pos.offset(5,0,0), concrete)
+  chunk.setBlockData(pos.offset(5,0,0), data)
+  chunk.setBlockType(pos.offset(6,0,0), concrete)
+  chunk.setBlockData(pos.offset(6,0,0), data)
+  chunk.setBlockType(pos.offset(7,0,0), concrete)
+  chunk.setBlockData(pos.offset(7,0,0), data)
+
+}
+
+function prism(chunk, level, lush) {
+  const air = mcData.blocksByName.air.id 
+  for (let h = 0; h < 8; h++) {
+    for (let x = 2; x < 13; x++) {
+      for (let z = 5 + h; z < 12; z++) {
+        const pos = new Vec3(x, level + h + 1, z)
+        chunk.setBlockType(pos, concrete)
+        chunk.setBlockData(pos, gray)
+        chunk.setSkyLight(pos, 15) 
+      } 
+    }
+  }
+  for (let h = 0; h < 6; h++) {
+    for (let x = 3; x < 12; x++) {
+      for (let z = 5 + h + 1; z < 12 - 1; z++) {
+        const pos = new Vec3(x, level + h + 1, z)
+        chunk.setBlockType(pos, mcData.blocksByName.air.id)
+        chunk.setSkyLight(pos, 15) 
+      } 
+    }
+  }
+  let pos = new Vec3(12,level + 1,8)
+  chunk.setBlockType(pos, air)
+  chunk.setSkyLight(pos, 15)
+  chunk.setBlockType(pos.offset(0,0,1), air)
+  chunk.setSkyLight(pos.offset(0,0,1), 15)
+  chunk.setBlockType(pos.offset(0,1,1), air)
+  chunk.setSkyLight(pos.offset(0,1,1), 15)
+  chunk.setBlockType(pos.offset(0,1,0), air)
+  chunk.setSkyLight(pos.offset(0,1,0), 15)
+
+  let data
+  const block = concrete
+  if (lush === true) {
+    data = yellow
+  } else {
+    data = red 
+  }
+  pos = new Vec3(4, level + 2, 11)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(2,0,0), concrete)
+  chunk.setBlockData(pos.offset(2,0,0), black)
+  chunk.setBlockType(pos.offset(4,0,0), concrete)
+  chunk.setBlockData(pos.offset(4,0,0), data)
+  chunk.setBlockType(pos.offset(5,0,0), concrete)
+  chunk.setBlockData(pos.offset(5,0,0), data)
+  chunk.setBlockType(pos.offset(6,0,0), concrete)
+  chunk.setBlockData(pos.offset(6,0,0), data)
+  pos = new Vec3(4, level + 4, 11)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(1,0,0), concrete)
+  chunk.setBlockData(pos.offset(1,0,0), data)
+  chunk.setBlockType(pos.offset(2,0,0), concrete)
+  chunk.setBlockData(pos.offset(2,0,0), data)
+  chunk.setBlockType(pos.offset(3,0,0), concrete)
+  chunk.setBlockData(pos.offset(3,0,0), data)
+  chunk.setBlockType(pos.offset(5,0,0), concrete)
+  chunk.setBlockData(pos.offset(5,0,0), data)
+  chunk.setBlockType(pos.offset(6,0,0), concrete)
+  chunk.setBlockData(pos.offset(6,0,0), data)
+  pos = new Vec3(4, level + 6, 11)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(2,0,0), concrete)
+  chunk.setBlockData(pos.offset(2,0,0), black)
+  chunk.setBlockType(pos.offset(4,0,0), concrete)
+  chunk.setBlockData(pos.offset(4,0,0), black)
+  chunk.setBlockType(pos.offset(6,0,0), concrete)
+  chunk.setBlockData(pos.offset(6,0,0), data)
+
+}
+
+function speckle(chunk, level, seedRand, lush) {
+  let data
+  const block = concrete
+  if (lush === true) {
+    data = yellow
+  } else {
+    data = red 
+  }
+  for (let x = 1 ; x < 15; x++) {
+    for (let z = 1 ; z < 15; z++) {
+      if (seedRand(20) < 1) {
+        const pos = new Vec3(x, level, z);
+        chunk.setBlockType(pos, block)
+        chunk.setBlockData(pos, data)
+      }
+    }
+  }
+}
+
+function pyramid(chunk, level, lush) {
+  for (let h = 0; h < 8; h++) {
+    for (let x = 0 + h; x < 16 - h; x++) {
+      for (let y = 0 + h; y < 16 - h; y++) {
+          const pos = new Vec3(x, h + level + 1, y)
+          chunk.setBlockType(pos, concrete)
+          chunk.setBlockData(pos, gray)
+          chunk.setSkyLight(pos, 15) 
+      }
+    }
+  }
+  for (let h = 0; h < 7; h++) {
+    for (let x = 1 + h; x < 15 - h; x++) {
+      for (let y = 1 + h; y < 15 - h; y++) {
+          const pos = new Vec3(x, h + level + 1, y)
+          chunk.setBlockType(pos, air)
+          chunk.setSkyLight(pos, 15) 
+      }
+    }
+  }
+
+  let data
+  const block = concrete
+  if (lush === true) {
+    data = yellow
+  } else {
+    data = red 
+  }
+  let pos = new Vec3(7, level + 4, 12)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(-1,0,0), concrete)
+  chunk.setBlockData(pos.offset(-1,0,0), data)
+  chunk.setBlockType(pos.offset(1,0,0), concrete)
+  chunk.setBlockData(pos.offset(1,0,0), data)
+  chunk.setBlockType(pos.offset(2,0,0), concrete)
+  chunk.setBlockData(pos.offset(2,0,0), data)
+  chunk.setBlockType(pos.offset(0,1,-1), concrete)
+  chunk.setBlockData(pos.offset(0,1,-1), data)
+  chunk.setBlockType(pos.offset(1,1,-1), concrete)
+  chunk.setBlockData(pos.offset(1,1,-1), data)
+
+pos = new Vec3(7, level + 4, 3)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(-1,0,0), concrete)
+  chunk.setBlockData(pos.offset(-1,0,0), data)
+  chunk.setBlockType(pos.offset(1,0,0), concrete)
+  chunk.setBlockData(pos.offset(1,0,0), data)
+  chunk.setBlockType(pos.offset(2,0,0), concrete)
+  chunk.setBlockData(pos.offset(2,0,0), data)
+  chunk.setBlockType(pos.offset(0,1,1), concrete)
+  chunk.setBlockData(pos.offset(0,1,1), data)
+  chunk.setBlockType(pos.offset(1,1,1), concrete)
+  chunk.setBlockData(pos.offset(1,1,1), data)
+
+  pos = new Vec3(7, level + 1, 0)
+  chunk.setBlockType(pos.offset(0,0,0), air)
+  chunk.setSkyLight(pos.offset(0,0,0), 15)
+  chunk.setBlockType(pos.offset(1,0,0), air)
+  chunk.setSkyLight(pos.offset(1,0,0), 15)
+
+  chunk.setBlockType(pos.offset(0,1,1), air)
+  chunk.setSkyLight(pos.offset(0,1,1), 15)
+  chunk.setBlockType(pos.offset(1,1,1), air)
+  chunk.setSkyLight(pos.offset(1,1,1), 15)
+
+  chunk.setBlockType(pos.offset(-1,1,0), concrete)
+  chunk.setBlockData(pos.offset(-1,1,0), gray)
+  chunk.setSkyLight(pos.offset(-1,1,0), 15)
+  chunk.setBlockType(pos.offset(2,1,0), concrete)
+  chunk.setBlockData(pos.offset(2,1,0), gray)
+  chunk.setSkyLight(pos.offset(2,1,0), 15)
+  chunk.setBlockType(pos.offset(-1,2,0), concrete)
+  chunk.setBlockData(pos.offset(-1,2,0), gray)
+  chunk.setSkyLight(pos.offset(-1,2,0), 15)
+  chunk.setBlockType(pos.offset(2,2,0), concrete)
+  chunk.setBlockData(pos.offset(2,2,0), gray)
+  chunk.setSkyLight(pos.offset(2,2,0), 15)
+  chunk.setBlockType(pos.offset(0,3,0), concrete)
+  chunk.setBlockData(pos.offset(0,3,0), gray)
+  chunk.setSkyLight(pos.offset(0,3,0), 15)
+  chunk.setBlockType(pos.offset(1,3,0), concrete)
+  chunk.setBlockData(pos.offset(1,3,0), gray)
+  chunk.setSkyLight(pos.offset(1,3,0), 15)
+
+
+  chunk.setBlockType(pos.offset(-1,2,1), concrete)
+  chunk.setBlockData(pos.offset(-1,2,1), gray)
+  chunk.setSkyLight(pos.offset(-1,2,1), 15)
+  chunk.setBlockType(pos.offset(2,2,1), concrete)
+  chunk.setBlockData(pos.offset(2,2,1), gray)
+  chunk.setSkyLight(pos.offset(2,2,1), 15)
+  chunk.setBlockType(pos.offset(0,2,1), concrete)
+  chunk.setBlockData(pos.offset(0,2,1), gray)
+  chunk.setSkyLight(pos.offset(0,2,1), 15)
+  chunk.setBlockType(pos.offset(1,2,1), concrete)
+  chunk.setBlockData(pos.offset(1,2,1), gray)
+  chunk.setSkyLight(pos.offset(1,2,1), 15)
+
+  
+ // need to add glowing blocks in side
+}
+
+function pit(chunk, lush) {
+  let block
+  let data
+  if (lush) { data = yellow} else { data = red}
+  const liner = concrete
+  for (let h = 14; h < 24; h++) {
+    for (let x = 0; x < 16; x++) {
+      for (let y = 0; y < 16; y++) {
+        let data = 1;
+        const pos = new Vec3(x, h, y)
+        if (h < 21) {
+          chunk.setBlockType(pos, liner)
+          chunk.setBlockData(pos, gray)
+        } else {
+          chunk.setBlockType(pos, air)
+        }
+        chunk.setSkyLight(pos, 15)
+      }
+    }
+  }
+  for (let h = 0; h < 7; h++) {
+    for (let x = 0 + h; x < 16 - h; x++) {
+      for (let z = 0 + h; z < 16 - h; z++) {
+        const pos = new Vec3(x, 21 - h, z)
+        chunk.setBlockType(pos, mcData.blocksByName.air.id)
+        chunk.setBlockData(pos, 0)
+        chunk.setSkyLight(pos, 15)
+      }
+    }
+    for (let x = 0 + h; x < 16 - h; x++) {
+      for (let z = 1; z < 8; z ++) {
+        const pos = new Vec3(x, 21 - h, z)
+        chunk.setBlockType(pos, mcData.blocksByName.air.id)
+        chunk.setBlockData(pos, 0)
+        chunk.setSkyLight(pos, 15)
+      }
+    }
+  }
+  let pos = new Vec3(4, 19, 0)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(1,0,0), concrete)
+  chunk.setBlockData(pos.offset(1,0,0), data)
+  chunk.setBlockType(pos.offset(3,0,0), concrete)
+  chunk.setBlockData(pos.offset(3,0,0), black)
+  chunk.setBlockType(pos.offset(5,0,0), concrete)
+  chunk.setBlockData(pos.offset(5,0,0), data)
+  chunk.setBlockType(pos.offset(7,0,0), concrete)
+  chunk.setBlockData(pos.offset(7,0,0), data)
+}
+
+function slimelake(chunk, seedRand) {
+  for (let h = 13; h < 23; h++) {
+    for (let x = 0; x < 16; x++) {
+      for (let y = 0; y < 16; y++) {
+        let data = 1;
+        const pos = new Vec3(x, h, y)
+        if (h < 21) {
+          chunk.setBlockType(pos, concrete)
+          chunk.setBlockData(pos, gray)
+        } else {
+          chunk.setBlockType(pos, mcData.blocksByName.air.id)
+        }
+        chunk.setBlockData(pos, 0)
+        chunk.setSkyLight(pos, h - 8)
+      }
+    }
+  }
+  for (let h = 0; h < 7; h++) {
+    for (let x = 0 + h; x < 16 - h; x++) {
+      for (let y = 0 + h; y < 16 - h; y++) {
+        const pos = new Vec3(x, 20 - h, y)
+        const grassRand = seedRand(20)
+        if ((grassRand < 12) || ( h === 0)) {
+         chunk.setBlockType(pos, mcData.blocksByName.water.id)
+         chunk.setBlockData(pos, 0)
+         chunk.setSkyLight(pos, h - 8)
+        } else {
+          if (h === 6) {
+            chunk.setBlockType(pos, mcData.blocksByName.tall_seagrass.id)
+            chunk.setBlockData(pos, 0)
+            chunk.setSkyLight(pos, h - 8)
+          } else {
+            chunk.setBlockType(pos, mcData.blocksByName.seagrass.id)
+            chunk.setBlockData(pos, 0)
+            chunk.setSkyLight(pos, h - 8)
+          }
+        }
+      }
+    }
+  }
+}
+
+function dome(chunk, level, lush) {
+  let pos = new Vec3(0, level, 0)
+  for (let h = 1; h < 4; h++) {
+    for (let l = 0; l < 4; l++) {
+      chunk.setBlockType(pos.offset(6+l,h,2), concrete)
+      chunk.setBlockData(pos.offset(6+l,h,2), gray)
+      chunk.setSkyLight(pos.offset(6+l,h,2), 15)
+      chunk.setBlockType(pos.offset(6+l,h,13), concrete)
+      chunk.setBlockData(pos.offset(6+l,h,13), gray)
+      chunk.setSkyLight(pos.offset(6+l,h,13), 15) 
+      chunk.setBlockType(pos.offset(2,h,6+l), concrete)
+      chunk.setBlockData(pos.offset(2,h,6+l), gray)
+      chunk.setSkyLight(pos.offset(2,h,6+l), 15)
+      chunk.setBlockType(pos.offset(13,h,6+l), concrete)
+      chunk.setBlockData(pos.offset(13,h,6+l), gray)
+      chunk.setSkyLight(pos.offset(13,h,6+l), 15)     
+    }
+  }
+  for (let h = 1; h < 4; h++) {
+    for (let l = 0; l < 2; l++) {
+      // make a door
+      chunk.setBlockType(pos.offset(7+l,h % 2 + 1,2), mcData.blocksByName.air.id)
+      chunk.setSkyLight(pos.offset(7+l,h % 2 + 1,2), 15)
+
+      chunk.setBlockType(pos.offset(4+l,h,3), concrete)
+      chunk.setBlockData(pos.offset(4+l,h,3), gray)
+      chunk.setSkyLight(pos.offset(4+l,h,3), 15)
+      chunk.setBlockType(pos.offset(10+l,h,3), concrete)
+      chunk.setBlockData(pos.offset(10+l,h,3), gray)
+      chunk.setSkyLight(pos.offset(10+l,h,3), 15) 
+      chunk.setBlockType(pos.offset(3,h,4+l), concrete)
+      chunk.setBlockData(pos.offset(3,h,4+l), gray)
+      chunk.setSkyLight(pos.offset(3,h,4+l), 15)
+      chunk.setBlockType(pos.offset(12,h,4+l), concrete)
+      chunk.setBlockData(pos.offset(12,h,4+l), gray)
+      chunk.setSkyLight(pos.offset(12,h,4+l), 15)  
+      chunk.setBlockType(pos.offset(4+l,h,12), concrete)
+      chunk.setBlockData(pos.offset(4+l,h,12), gray)
+      chunk.setSkyLight(pos.offset(4+l,h,12), 15)
+      chunk.setBlockType(pos.offset(10+l,h,12), concrete)
+      chunk.setBlockData(pos.offset(10+l,h,12), gray)
+      chunk.setSkyLight(pos.offset(10+l,h,12), 15) 
+      chunk.setBlockType(pos.offset(3,h,10+l), concrete)
+      chunk.setBlockData(pos.offset(3,h,10+l), gray)
+      chunk.setSkyLight(pos.offset(3,h,10+l), 15)
+      chunk.setBlockType(pos.offset(12,h,10+l), concrete)
+      chunk.setBlockData(pos.offset(12,h,10+l), gray)
+      chunk.setSkyLight(pos.offset(12,h,10+l), 15) 
+    }
+  }
+
+  const seals1 = [
+    [6,3],[4,4],[3,6],[3,9],[4,11],[6,12],[9,3],[11,4],[12,6],[12,9],[11,11],[9,12]
+  ]
+  for (let i = 0; i < seals1.length; i++) {
+    chunk.setBlockType(pos.offset(seals1[i][0],4,seals1[i][1]), concrete)
+    chunk.setBlockData(pos.offset(seals1[i][0],4,seals1[i][1]), gray)
+    chunk.setSkyLight(pos.offset(seals1[i][0],4,seals1[i][1]), 15)
+  }
+  const seals2 = [
+    [7,4],[8,4],[7,11],[8,11],[4,7],[4,8],[11,7],[11,8],[5,5],[10,5],[10,10],[5,10]
+  ]
+  for (let i = 0; i < seals2.length; i++) {
+    chunk.setBlockType(pos.offset(seals2[i][0],6,seals2[i][1]), concrete)
+    chunk.setBlockData(pos.offset(seals2[i][0],6,seals2[i][1]), gray)
+    chunk.setSkyLight(pos.offset(seals2[i][0],6,seals2[i][1]), 15)
+  }
+  const xstarts = [
+    [7,3],[5,4],[9,4],[5,11],[9,11],[7,12]
+  ]
+  const zstarts = [
+    [4,5],[11,5],[3,7],[12,7],[4,9],[11,9]
+  ]
+  for (let h = 4; h < 6; h++) {
+    for (let l = 0; l < 2; l++) {
+      for (let i = 0; i < 6; i++) {
+        chunk.setBlockType(pos.offset(xstarts[i][0] + l,h,xstarts[i][1]), concrete)
+        chunk.setBlockData(pos.offset(xstarts[i][0] + l,h,xstarts[i][1]), gray)
+        chunk.setSkyLight(pos.offset(xstarts[i][0] + l,h,xstarts[i][1]), 15)
+        chunk.setBlockType(pos.offset(zstarts[i][0],h,zstarts[i][1] + l), concrete)
+        chunk.setBlockData(pos.offset(zstarts[i][0],h,zstarts[i][1] + l), gray)
+        chunk.setSkyLight(pos.offset(zstarts[i][0],h,zstarts[i][1] + l), 15)
+      }
+    }
+  }
+  for (let l = 0; l < 4; l++) {
+    chunk.setBlockType(pos.offset(6+l,6,5), concrete)
+    chunk.setBlockData(pos.offset(6+l,6,5), gray)
+    chunk.setSkyLight(pos.offset(6+l,6,5), 15)
+    chunk.setBlockType(pos.offset(6+l,6,10), concrete)
+    chunk.setBlockData(pos.offset(6+l,6,10), gray)
+    chunk.setSkyLight(pos.offset(6+l,6,10), 15) 
+    chunk.setBlockType(pos.offset(5,6,6+l), concrete)
+    chunk.setBlockData(pos.offset(5,6,6+l), gray)
+    chunk.setSkyLight(pos.offset(5,6,6+l), 15)
+    chunk.setBlockType(pos.offset(10,6,6+l), concrete)
+    chunk.setBlockData(pos.offset(10,6,6+l), gray)
+    chunk.setSkyLight(pos.offset(10,6,6+l), 15) 
+    for (let m = 0; m < 4; m++) {
+      chunk.setBlockType(pos.offset(6+l,7,6 + m), concrete)
+      chunk.setBlockData(pos.offset(6+l,7,6 + m), gray)
+      chunk.setSkyLight(pos.offset(6+l,7,6 + m), 15)
+    }
+  }
+  // need to add glowing blocks
+  let data
+  const block = concrete
+  if (lush === true) {
+    data = yellow
+  } else {
+    data = red 
+  }
+  pos = new Vec3(5, level + 1, 12)
+  chunk.setBlockType(pos, concrete)
+  chunk.setBlockData(pos, data)
+  chunk.setBlockType(pos.offset(0,0,0), concrete)
+  chunk.setBlockData(pos.offset(0,0,0), data)
+  chunk.setBlockType(pos.offset(0,1,0), concrete)
+  chunk.setBlockData(pos.offset(0,1,0), data)
+  chunk.setBlockType(pos.offset(0,2,0), concrete)
+  chunk.setBlockData(pos.offset(0,2,0), data)
+  chunk.setBlockType(pos.offset(0,3,-1), concrete)
+  chunk.setBlockData(pos.offset(0,3,-1), data)
+  chunk.setBlockType(pos.offset(1,5,-2), concrete)
+  chunk.setBlockData(pos.offset(1,5,-2), data)
+
+  pos = new Vec3(5, level + 1, 3)
+  chunk.setBlockType(pos.offset(0,0,0), concrete)
+  chunk.setBlockData(pos.offset(0,0,0), data)
+  chunk.setBlockType(pos.offset(0,1,0), concrete)
+  chunk.setBlockData(pos.offset(0,1,0), data)
+  chunk.setBlockType(pos.offset(0,2,0), concrete)
+  chunk.setBlockData(pos.offset(0,2,0), data)
+  chunk.setBlockType(pos.offset(0,3,1), concrete)
+  chunk.setBlockData(pos.offset(0,3,1), data)
+  chunk.setBlockType(pos.offset(1,5,2), concrete)
+  chunk.setBlockData(pos.offset(1,5,2), data)
+}
+
+
+module.exports = {
+  plain,
+  mountain, hill, lake, 
+  deciduous, evergreen, quarry, 
+  desert, lush, sea,
+
+  tarmac, pyramid, slimelake, dome, cube, pit, square, prism, speckle,
+
+  wall
+};
