@@ -9,16 +9,17 @@ then
   read -r -p "Install nvm and switch to node 16? [y/N] " response
   if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
   then
-    curl https://raw.github.com/creationix/nvm/master/install.sh | sh
+    wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
     . ~/.nvm/nvm.sh
     . ~/.profile
     . ~/.bashrc
-    nvm install 16
-    echo "Node version: $(node --version)"
   else
     exit 0
   fi
 fi
+nvm install 16
+nvm use 16
+echo "Node version: $(node --version)"
 
 # clone pwc and fs
 git clone https://github.com/PrismarineJS/flying-squid.git
