@@ -1,6 +1,6 @@
 # pwc-memleak
 
-This repository should make it simpler to reproduce (pwc issue #333)[https://github.com/PrismarineJS/prismarine-web-client/issues/333].
+This repository should make it simpler to reproduce [pwc issue #333](https://github.com/PrismarineJS/prismarine-web-client/issues/333).
 
 Clone the repo and then run ./install.sh to clone flying-squid and prismarine-web-client, and copy an intensive world generation function into flying-squid.
 
