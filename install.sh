@@ -30,16 +30,16 @@ cd prismarine-web-client
 git reset --hard 9e53633286f7824bc12ef2aa75cf7bfc59bb6e06 
 cd ..
 
-# copy patch files
-cp ./patch-files/fs.js ./flying-squid/
-cp -r ./patch-files/orthogen/ ./flying-squid/node_modules/
-
 # install fs and pwc
 cd prismarine-web-client
 npm install
 cd ../flying-squid
 npm install
 cd ..
+
+# copy patch files
+cp ./patch-files/fs.js ./flying-squid/
+cp -r ./patch-files/orthogen/ ./flying-squid/node_modules/
 
 echo "In one terminal run: cd flying-squid && node fs.js"
 echo "In a second terminal run: cd prismarine-web-client && npm start"
